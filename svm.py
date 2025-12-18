@@ -3,29 +3,23 @@ import pandas as pd
 import numpy as np
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
+import joblib # Import joblib for loading the model
 
 st.title('Iris Flower Species Prediction')
 st.write('This app predicts the Iris flower species (setosa, versicolor, or virginica) based on sepal and petal measurements.')
 
-# Load the dataset (assuming the CSV is in the same directory as app.py)
-@st.cache_data
-def load_data():
-    data = pd.read_csv('Iris_dataset(SVM).csv')
-    return data
+# --- Load the pre-trained model ---
+# Assuming the trained model is saved as 'svm_model.pkl' in the same directory
+@st.cache_resource # Use st.cache_resource for models
+def load_model():
+    try:
+        model = joblib.load('svm_iris_model.pkl')
+        return model
+    except FileNotFoundError:
+        st.error("Model file 'svm_model.pkl' not found. Please ensure it's in the same directory as app.py")
+        st.stop()
 
-ir = load_data()
-
-# Prepare the data
-x = ir[['sepal length (cm)', 'sepal width (cm)', 'petal length (cm)', 'petal width (cm)']]
-y = ir['flower_name']
-
-# Train the model
-# Using a small test_size for deployment to ensure enough training data,
-# but in a real scenario, you might train on the full dataset or a robust split.
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.01, random_state=42) # Adjusted test_size for full training in app
-
-model = SVC(kernel='linear')
-model.fit(x_train, y_train)
+model = load_model()
 
 st.sidebar.header('Input Features')
 
